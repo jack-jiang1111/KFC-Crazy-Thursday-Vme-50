@@ -5,8 +5,9 @@ This smart contract implements a popular meme from Chinese internet culture: "KF
 As a result, every Thursday, people will post in groups or on their social media feeds, writing short essays about their desire to eat KFC, often playing up their situations or being humorous, attempting to get a free meal. Each Thursday, various creative and quirky texts are created, giving rise to the "Crazy Thursday" meme.
 
 In fact, every business, when facing a period of consumer stagnation, will try to come up with special days, offering coupons or promotions to attract more customers. KFC is doing just that.
-
-![KFC Crazy Thursday](https://github.com/jack-jiang1111/KFC-Crazy-Thursday-Vme-50/blob/main/image/VME50.jpg)
+<p align="center">
+  <img src= "https://github.com/jack-jiang1111/KFC-Crazy-Thursday-Vme-50/blob/main/image/VME50.jpg"/>
+</p>
 
 
 ## How to Use
