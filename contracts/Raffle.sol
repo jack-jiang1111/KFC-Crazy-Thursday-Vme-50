@@ -12,6 +12,7 @@ pragma solidity ^0.8.7;
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 error Raffle__NotEnoughETHEntered();
 error Raffle_TransferFailed();
@@ -32,14 +33,18 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
     }
 
     // state variable
+    uint256 public constant MINIMUM_USD = 10 * 10**18; // the lottery will need to have at least 10 usd to start the lottery
     uint256 private immutable i_entranceFee;
     address payable[] private s_players;
     VRFCoordinatorV2Interface private immutable i_vrdfCoordinator;
+    AggregatorV3Interface private s_priceFeed;
     uint64 private immutable i_subscriptionId; //what's the difference between constant and immutable: immutable can initilize in constructor
     uint32 private immutable i_callbackGasLimit;
     bytes32 private immutable i_gasLane;
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 1;
+    address[] private s_funders;
+    mapping(address => uint256) private s_addressToAmountFunded;
     
     // Lottery Winner
     address private s_recentWinner;
@@ -63,7 +68,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         uint32 callbackGasLimit,
         uint256 interval
     ) VRFConsumerBaseV2(vrfCoordinatorV2){
-        i_entranceFee = entranceFee;
+        i_entranceFee = 0;
         i_vrdfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
         i_gasLane = gasLane;
         i_subscriptionId = subscriptionId;
@@ -72,6 +77,13 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         s_lastTimeStamp = block.timestamp;
         i_interval = interval;
     }
+
+    // people could fund the contract, buying more people KFC
+    function fund() public payable {
+        s_addressToAmountFunded[msg.sender] += msg.value;
+        s_funders.push(msg.sender);
+    }
+    
     function enterRaffle() public payable returns(uint256){
         // require (msg.value > i_entranceFee, "Not enough ETH!")
         if(msg.value<i_entranceFee){
@@ -105,7 +117,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         // check the interval
         bool timePassed = (block.timestamp-s_lastTimeStamp)>i_interval;
         bool hasPlayers = (s_players.length>0);
-        bool hasBalance = address(this).balance>0;
+        bool hasBalance = PriceConverter.getConversionRate(address(this)).balance>MINIMUM_USD;
         upkeepNeeded = (isOpen && timePassed && hasPlayers && hasBalance);
         return (upkeepNeeded,"0x0");
     }
@@ -143,7 +155,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         s_players = new address payable[](0);
         s_lastTimeStamp = block.timestamp;
 
-        (bool success, ) = winner.call{value:address(this).balance}("");
+        (bool success, ) = winner.call{value:PriceConverter.getConversionRateBack(MINIMUM_USD)}("");
 
         // require (success)
         if(!success){
