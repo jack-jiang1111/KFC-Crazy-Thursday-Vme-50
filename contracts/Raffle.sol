@@ -12,7 +12,8 @@ pragma solidity ^0.8.7;
 import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import "./PriceConverter.sol";
 
 error Raffle__NotEnoughETHEntered();
 error Raffle_TransferFailed();
@@ -66,6 +67,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         bytes32 gasLane,
         uint64 subscriptionId,
         uint32 callbackGasLimit,
+        address priceFeed,
         uint256 interval
     ) VRFConsumerBaseV2(vrfCoordinatorV2){
         i_entranceFee = 0;
@@ -75,6 +77,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         i_callbackGasLimit = callbackGasLimit;
         s_raffleState = RaffleState.OPEN;
         s_lastTimeStamp = block.timestamp;
+        s_priceFeed = AggregatorV3Interface(priceFeed);
         i_interval = interval;
     }
 
@@ -117,7 +120,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         // check the interval
         bool timePassed = (block.timestamp-s_lastTimeStamp)>i_interval;
         bool hasPlayers = (s_players.length>0);
-        bool hasBalance = PriceConverter.getConversionRate(address(this)).balance>MINIMUM_USD;
+        bool hasBalance = PriceConverter.getConversionRate(address(this).balance,s_priceFeed)>MINIMUM_USD;
         upkeepNeeded = (isOpen && timePassed && hasPlayers && hasBalance);
         return (upkeepNeeded,"0x0");
     }
@@ -155,7 +158,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface{
         s_players = new address payable[](0);
         s_lastTimeStamp = block.timestamp;
 
-        (bool success, ) = winner.call{value:PriceConverter.getConversionRateBack(MINIMUM_USD)}("");
+        (bool success, ) = winner.call{value:PriceConverter.getConversionRateReverse(MINIMUM_USD,s_priceFeed)}("");
 
         // require (success)
         if(!success){
