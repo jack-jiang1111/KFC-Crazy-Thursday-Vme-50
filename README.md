@@ -8,11 +8,12 @@ In fact, every business, when facing a period of consumer stagnation, will try t
 
 ![KFC Crazy Thursday](https://github.com/jack-jiang1111/KFC-Crazy-Thursday-Vme-50/image/VME50.jpg)
 
+
 ## How to Use
 
 Before Thursday, participants can enter the lottery system by paying a small gas fee. Every Thursday, the system will randomly select a winner from the list of participants and transfer all the ETH in the smart contract to the winner.
 
-![DEMO](https://github.com/jack-jiang1111/KFC-Crazy-Thursday-Vme-50/image/DEMO.jpg)
+![DEMO](https://github.com/jack-jiang1111/KFC-Crazy-Thursday-Vme-50/blob/main/image/DEMO.PNG)
 
 ## Technology
 
@@ -20,7 +21,7 @@ This smart contract utilizes Chainlink VRF to randomly select a winner and Chain
 
 ## Deployment
 
-1. **Deploy the Contract**: Deploy the contract to the Ethereum network before Thursday.
+1. **Deploy the Contract**: Deploy the contract to the Ethereum network on Thursday.
 2. **Enter the Lottery**: Participants enter the lottery by sending a small amount of ETH to the contract.
 3. **Random Selection**: Every Thursday, the contract uses Chainlink VRF to randomly select a winner.
 4. **Winner Announcement**: The winner receives all the ETH in the contract.
