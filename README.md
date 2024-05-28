@@ -6,7 +6,7 @@ As a result, every Thursday, people will post in groups or on their social media
 
 In fact, every business, when facing a period of consumer stagnation, will try to come up with special days, offering coupons or promotions to attract more customers. KFC is doing just that.
 
-![KFC Crazy Thursday](https://github.com/jack-jiang1111/KFC-Crazy-Thursday-Vme-50/image/VME50.jpg)
+![KFC Crazy Thursday](https://github.com/jack-jiang1111/KFC-Crazy-Thursday-Vme-50/blob/main/image/VME50.jpg)
 
 
 ## How to Use
