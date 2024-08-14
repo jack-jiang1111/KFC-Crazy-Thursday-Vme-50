@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 library PriceConverter {
   function getPrice(AggregatorV3Interface priceFeed)
@@ -37,8 +37,8 @@ library PriceConverter {
     returns (uint256)
   {
     uint256 ethPrice = getPrice(priceFeed);
-    uint256 ethAmount = usdAmount*1000000000000000000/ethPrice;
+    uint256 WeiAmount = usdAmount*1000000000000000000*1000000000000000000/ethPrice;
     // the actual ETH/USD conversation rate, after adjusting the extra 0s.
-    return ethAmount;
+    return WeiAmount;
   }
 }
