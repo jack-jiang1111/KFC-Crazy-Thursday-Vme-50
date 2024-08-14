@@ -15,7 +15,7 @@ In fact, every business, when facing a period of consumer stagnation, will try t
 Before Thursday, participants can enter the lottery system by paying a small gas fee. Every Thursday, the system will randomly select a winner from the list of participants and transfer all the ETH in the smart contract to the winner.
 
 ![DEMO](https://github.com/jack-jiang1111/KFC-Crazy-Thursday-Vme-50/blob/main/image/DEMO.PNG)
-
+test
 ## Technology
 
 This smart contract utilizes Chainlink VRF to randomly select a winner and Chainlink Keepers to trigger the lottery function every week. Simply deploy the contract on Thursday, and it will continue running as long as there are sufficient funds in the lottery system and a Chainlink subscription.
