@@ -7,7 +7,7 @@ const { developmentChains, networkConfig } = require("../../helper-hardhat-confi
     ? describe.skip
     : describe("Raffle Unit Tests", function () {
           let raffle, raffleContract, vrfCoordinatorV2Mock, interval, player // , deployer
-
+          let fundAmount = ethers.utils.parseEther("0.1")
           beforeEach(async () => {
               accounts = await ethers.getSigners() // could also do with getNamedAccounts
               //   deployer = accounts[0]
@@ -41,6 +41,18 @@ const { developmentChains, networkConfig } = require("../../helper-hardhat-confi
                   const contractPlayer = await raffle.getPlayer(0)
                   assert.equal(accounts[1].address, contractPlayer)
               })
+              it("Reenter a raffle", async () => {
+                raffle = raffleContract.connect(accounts[1])
+                //console.log("what's raffle?",raffle)
+                console.log("what's account",accounts[1].address)
+                //console.log("what's 
+                console.log("what's the version before?",await raffle.gethasEntered(accounts[1].address));
+                await raffle.enterRaffle();
+                console.log("what's the version after?",await raffle.gethasEntered(accounts[1].address));
+                await expect(raffle.enterRaffle()).to.be.revertedWith( // is reverted as raffle is calculating
+                    "Raffle__PlayerHasEntered()"
+                )
+            })
               it("emits event on enter", async () => {
                   player = accounts[3]
                   raffle = raffleContract.connect(player)
@@ -49,7 +61,7 @@ const { developmentChains, networkConfig } = require("../../helper-hardhat-confi
                       "RaffleEnter"
                   )
               })
-              it("doesn't allow entrance when raffle is calculating", async () => {
+              it("doesn't allow entrance/fund when raffle is calculating", async () => {
                   raffle = raffleContract.connect(accounts[4])
                   await raffle.enterRaffle()
                   await raffle.fund({value: 1000000000000})
@@ -62,8 +74,36 @@ const { developmentChains, networkConfig } = require("../../helper-hardhat-confi
                   await expect(raffle.enterRaffle()).to.be.revertedWith( // is reverted as raffle is calculating
                       "Raffle__RaffleNotOpen"
                   )
+                  await expect(raffle.fund()).to.be.revertedWith( // is reverted as raffle is calculating
+                    "Raffle__RaffleNotOpen"
+                )
               })
+              it("Test the number of players ", async () => {
+                assert.equal(await raffle.getNumberOfPlayers(), 0)
+                raffle = raffleContract.connect(accounts[1])
+                await raffle.enterRaffle()
+                assert.equal(await raffle.getNumberOfPlayers(), 1)
+                raffle = raffleContract.connect(accounts[2])
+                await raffle.enterRaffle()
+                assert.equal(await raffle.getNumberOfPlayers(), 2)
+                raffle = raffleContract.connect(accounts[3])
+                await raffle.enterRaffle()
+                assert.equal(await raffle.getNumberOfPlayers(), 3)
+                raffle = raffleContract.connect(accounts[4])
+                await raffle.enterRaffle()
+                assert.equal(await raffle.getNumberOfPlayers(), 4)
+            })
           })
+          describe("fundRaffle", function () {
+            it("check how much they fund", async () => {
+                raffle = raffleContract.connect(accounts[19])
+                await raffle.fund({value: fundAmount})
+                const endingBalance = await raffleContract.provider.getBalance(raffleContract.address)
+                // the max number represent in javascript is 2^53, but a typical number in solidity is 2^256,
+                // so we either use string to get this big number
+                assert.equal((fundAmount).toString(),endingBalance.toString());
+            })
+        })
           describe("checkUpkeep", function () {
               it("returns false if people haven't sent any ETH", async () => {
                   await network.provider.send("evm_increaseTime", [interval.toNumber() + 1])
@@ -146,6 +186,12 @@ const { developmentChains, networkConfig } = require("../../helper-hardhat-confi
                   await expect(
                       vrfCoordinatorV2Mock.fulfillRandomWords(1, raffle.address) // reverts if not fulfilled
                   ).to.be.revertedWith("nonexistent request")
+              })
+              it("Check get num words", async() =>{
+                  assert(raffle.getNumWords(),1);
+              })
+              it("Check request confirmation", async()=>{
+                  assert(raffle.getRequestConfirmations(),3);
               })
 
             // This test is too big...

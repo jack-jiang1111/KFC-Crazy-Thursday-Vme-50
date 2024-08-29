@@ -32,6 +32,7 @@ module.exports = {
     networks: {
         hardhat: {
             chainId: 31337,
+            blockGasLimit: 60000000 // Network block gasLimit
         },
         localhost: {
             chainId: 31337,

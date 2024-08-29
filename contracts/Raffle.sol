@@ -81,6 +81,8 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         if (s_raffleState != RaffleState.OPEN) {
             revert Raffle__RaffleNotOpen();
         }
+        console.log("check msg.sender: ",msg.sender);
+        console.log("check has enter? ",s_hasEntered[msg.sender]);
         if (s_hasEntered[msg.sender]==s_currentVersion) {
             revert Raffle__PlayerHasEntered();
         }
@@ -164,11 +166,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         s_lastTimeStamp = block.timestamp;
         // transfer winning money to the winner
         (bool success,) = recentWinner.call{value: getWinningMoney()}("");
-        // require(success, "Transfer failed");
-        if (!success) {
-            console.log("oh no!");
-            revert Raffle__TransferFailed();
-        }
+        require(success);
         emit WinnerPicked(recentWinner);
     }
 
@@ -207,6 +205,9 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         return s_players.length;
     }
 
+    function gethasEntered(address player) public view returns(uint256){
+        return s_hasEntered[player];
+    }
     function getWinningMoney() public view returns(uint256){
         // this return unit in Wei
         return PriceConverter.getConversionRateReverse(MINIMUM_USD,s_priceFeed);
